@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Actividad</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <div>
+                <p class="eyebrow">Historial</p>
+                <h1>Registros guardados</h1>
+                <p class="subtitle">Aquí puedes revisar todo el historial almacenado en tu navegador.</p>
+            </div>
+        </header>
+
+        <div class="button-group">
+            <button class="secondary" onclick="window.location.href='index.html'">Volver</button>
+            <button class="primary" id="exportExcelButton">Exportar a Excel</button>
+            <button class="accent" id="clearHistoryButton">Borrar Historial</button>
+        </div>
+
+        <div id="historyContent" class="results"></div>
+    </div>
+
+    <script>
+        function renderHistorial() {
+            const historial = JSON.parse(localStorage.getItem('historialDiario') || '[]');
+            const container = document.getElementById('historyContent');
+            if (historial.length === 0) {
+                container.innerHTML = '<p>No hay historial guardado.</p>';
+                return;
+            }
+
+            const getCategoryName = (registro, cat) => {
+                const categoryItem = registro.categoryTotals[cat];
+                if (typeof categoryItem === 'object' && categoryItem !== null) {
+                    return categoryItem.nombre || cat;
+                }
+                for (const key in registro.totales) {
+                    const item = registro.totales[key];
+                    if (item.cat === cat) {
+                        return item.nombre || cat;
+                    }
+                }
+                return cat;
+            };
+
+            const acumuladoPorCategoria = {};
+            historial.forEach(registro => {
+                for (const cat in registro.categoryTotals) {
+                    const categoryItem = registro.categoryTotals[cat];
+                    const cantidad = typeof categoryItem === 'object' && categoryItem !== null
+                        ? categoryItem.cantidad || 0
+                        : Number(categoryItem) || 0;
+                    const nombre = getCategoryName(registro, cat);
+
+                    if (!acumuladoPorCategoria[cat]) {
+                        acumuladoPorCategoria[cat] = { cantidad: 0, nombre };
+                    }
+                    acumuladoPorCategoria[cat].cantidad += cantidad;
+                }
+            });
+
+            let html = '<h3>Totales por categoría</h3>';
+            html += '<table><thead><tr><th>Categoría</th><th>Nombre</th><th>Total</th></tr></thead><tbody>';
+            for (const cat in acumuladoPorCategoria) {
+                const item = acumuladoPorCategoria[cat];
+                html += `<tr><td>${cat}</td><td>${item.nombre}</td><td><strong>${item.cantidad}</strong></td></tr>`;
+            }
+            html += '</tbody></table>';
+
+            container.innerHTML = html;
+        }
+
+        function clearHistorial() {
+            localStorage.removeItem('historialDiario');
+            renderHistorial();
+        }
+
+        function exportHistorialToExcel() {
+            const historial = JSON.parse(localStorage.getItem('historialDiario') || '[]');
+            if (historial.length === 0) {
+                alert('No hay historial para exportar.');
+                return;
+            }
+
+            const getCategoryName = (registro, cat) => {
+                const categoryItem = registro.categoryTotals[cat];
+                if (typeof categoryItem === 'object' && categoryItem !== null) {
+                    return categoryItem.nombre || cat;
+                }
+                for (const key in registro.totales) {
+                    const item = registro.totales[key];
+                    if (item.cat === cat) {
+                        return item.nombre || cat;
+                    }
+                }
+                return cat;
+            };
+
+            const acumuladoPorCategoria = {};
+            historial.forEach(registro => {
+                for (const cat in registro.categoryTotals) {
+                    const categoryItem = registro.categoryTotals[cat];
+                    const cantidad = typeof categoryItem === 'object' && categoryItem !== null
+                        ? categoryItem.cantidad || 0
+                        : Number(categoryItem) || 0;
+                    const nombre = getCategoryName(registro, cat);
+
+                    if (!acumuladoPorCategoria[cat]) {
+                        acumuladoPorCategoria[cat] = { cantidad: 0, nombre };
+                    }
+                    acumuladoPorCategoria[cat].cantidad += cantidad;
+                }
+            });
+
+            const rows = [];
+            for (const cat in acumuladoPorCategoria) {
+                const item = acumuladoPorCategoria[cat];
+                rows.push({ Categoría: cat, Nombre: item.nombre, Total: item.cantidad });
+            }
+
+            const worksheet = XLSX.utils.json_to_sheet(rows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Totales');
+
+            const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([wbout], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'historial_totales_por_categoria.xlsx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderHistorial();
+            document.getElementById('clearHistoryButton').addEventListener('click', clearHistorial);
+            document.getElementById('exportExcelButton').addEventListener('click', exportHistorialToExcel);
+        });
+    </script>
+</body>
+</html>
