@@ -24,5 +24,5 @@ Tienes 2 posibles maneras de usarlo: https://pablormn06.github.io/Recuento-GDO/
 2) Veremos la pagina con el recuento final
 <img width="1154" height="326" alt="image" src="https://github.com/user-attachments/assets/423f2580-45fd-4dee-b3da-2645ca6da14c" />
 
-Puedes tambien exportar el historial a excel, dandole al boton que tenemos en la parte superior
+Puedes tambien exportar el historial a excel, dandole al boton que tenemos en la parte superior<br>
 Tambien puedes borrar el historial dandole al boton que se encuentra en la parte superior
