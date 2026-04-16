@@ -1,7 +1,7 @@
 ## Bienvenido al Recuento del GDO de effeta
 
 Como funciona:<br>
-Tienes 2 posibles maneras de usarlo: [](https://pablormn06.github.io/Recuento-GDO/)
+Tienes 2 posibles maneras de usarlo: https://pablormn06.github.io/Recuento-GDO/
 ### A) Copiando el mensaje directo del grupo
 
 ### B) Introduciendo de manera manual los datos
